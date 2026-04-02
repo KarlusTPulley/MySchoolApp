@@ -15,6 +15,6 @@ namespace MySchoolApp.Web.Data
         [Column(TypeName = "nvarchar(100)")]
         public string Email { get; set; }
 
-        public ICollection<CourseSection> CourseSections { get; set; }
+        public ICollection<CourseSection>? CourseSections { get; set; }
     }
 }

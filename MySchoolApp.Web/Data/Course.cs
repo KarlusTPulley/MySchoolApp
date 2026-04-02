@@ -13,6 +13,6 @@ namespace MySchoolApp.Web.Data
         public string Title { get; set; }
         public int Credits { get; set; }
 
-        public ICollection<CourseSection> Sections { get; set; }
+        public ICollection<CourseSection>? Sections { get; set; }
     }
 }
