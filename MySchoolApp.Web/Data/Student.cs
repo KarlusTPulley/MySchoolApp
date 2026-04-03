@@ -17,6 +17,9 @@ namespace MySchoolApp.Web.Data
         [Column(TypeName = "nvarchar(100)")]
         public string Email { get; set; }
 
+        [NotMapped]
+        public string FullName => $"{FirstName} {LastName}";
+
         public ICollection<Enrollment>? Enrollments { get; set; } = new List<Enrollment>();
     }
 }

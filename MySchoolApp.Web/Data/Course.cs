@@ -11,6 +11,9 @@ namespace MySchoolApp.Web.Data
 
         [Column(TypeName = "nvarchar(50)")]
         public string Title { get; set; }
+
+        [NotMapped]
+        public string CourseName => $"{CourseCode} {Title}";
         public int Credits { get; set; }
 
         public ICollection<CourseSection>? Sections { get; set; }

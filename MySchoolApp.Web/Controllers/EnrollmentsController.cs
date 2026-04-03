@@ -48,8 +48,8 @@ namespace MySchoolApp.Web.Controllers
         // GET: Enrollments/Create
         public IActionResult Create()
         {
-            ViewData["CourseSectionId"] = new SelectList(_context.CourseSections, "Id", "Id");
-            ViewData["StudentId"] = new SelectList(_context.Students, "Id", "Id");
+            ViewData["CourseSectionId"] = new SelectList(_context.CourseSections.Select(c => new { c.Id, SectonName = c.SectionNumber + " " + c.Semester }), "Id", "SectonName");
+            ViewData["StudentId"] = new SelectList(_context.Students.Select(s => new { s.Id, FullName = s.FirstName + " " + s.LastName }), "Id", "FullName");
             return View();
         }
 
@@ -67,7 +67,7 @@ namespace MySchoolApp.Web.Controllers
                 return RedirectToAction(nameof(Index));
             }
             ViewData["CourseSectionId"] = new SelectList(_context.CourseSections, "Id", "Id", enrollment.CourseSectionId);
-            ViewData["StudentId"] = new SelectList(_context.Students, "Id", "Id", enrollment.StudentId);
+            ViewData["StudentId"] = new SelectList(_context.Students.Select(s => new { s.Id, FullName = s.FirstName + " " + s.LastName }), "Id", "FullName", enrollment.StudentId);
             return View(enrollment);
         }
 
@@ -85,7 +85,7 @@ namespace MySchoolApp.Web.Controllers
                 return NotFound();
             }
             ViewData["CourseSectionId"] = new SelectList(_context.CourseSections, "Id", "Id", enrollment.CourseSectionId);
-            ViewData["StudentId"] = new SelectList(_context.Students, "Id", "Id", enrollment.StudentId);
+            ViewData["StudentId"] = new SelectList(_context.Students.Select(s => new { s.Id, FullName = s.FirstName + " " + s.LastName }), "Id", "FullName", enrollment.StudentId);
             return View(enrollment);
         }
 

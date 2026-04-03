@@ -18,6 +18,8 @@ namespace MySchoolApp.Web.Data
         [Column(TypeName = "nvarchar(50)")]
         public string Semester { get; set; } // "Fall 2026"
 
+        [NotMapped]
+        public string SectionName => $"{SectionNumber} {Semester}";
         public ICollection<Enrollment>? Enrollments { get; set; }
     }
 }

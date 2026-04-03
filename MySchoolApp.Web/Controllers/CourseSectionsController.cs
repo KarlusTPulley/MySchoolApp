@@ -48,8 +48,8 @@ namespace MySchoolApp.Web.Controllers
         // GET: CourseSections/Create
         public IActionResult Create()
         {
-            ViewData["CourseId"] = new SelectList(_context.Courses, "Id", "Id");
-            ViewData["TeacherId"] = new SelectList(_context.Teachers, "Id", "Id");
+            ViewData["CourseId"] = new SelectList(_context.Courses.Select(c => new {c.Id, c.CourseName}), "Id", "CourseName");
+            ViewData["TeacherId"] = new SelectList(_context.Teachers.Select(t => new { t.Id, t.FullName} ), "Id", "FullName");
             return View();
         }
 
