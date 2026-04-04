@@ -1,6 +1,20 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MySchoolApp.Web.Data;
+using System.Reflection;
+
+//var mappingConfig = new MapperConfiguration(cfg =>
+//{
+//    cfg.AddProfile(new MappingProfile());
+//    // OR to auto-register all Profile types in the assembly:
+//    // var profiles = Assembly.GetExecutingAssembly()
+//    //     .GetTypes()
+//    //     .Where(t => typeof(Profile).IsAssignableFrom(t) && !t.IsAbstract)
+//    //     .Select(Activator.CreateInstance)
+//    //     .Cast<Profile>();
+//    // foreach (var p in profiles) cfg.AddProfile(p);
+//});
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +23,8 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+
+//builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>();

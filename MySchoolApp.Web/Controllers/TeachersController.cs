@@ -21,7 +21,17 @@ namespace MySchoolApp.Web.Controllers
         // GET: Teachers
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Teachers.ToListAsync());
+            var data = await _context.Teachers.ToListAsync();
+
+            var viewData = data.Select(t => new Models.Teachers.IndexVM
+            {
+                Id = t.Id,
+                FirstName = t.FirstName,
+                LastName = t.LastName,
+                Email = t.Email
+            }).ToList();
+
+            return View(viewData);
         }
 
         // GET: Teachers/Details/5
