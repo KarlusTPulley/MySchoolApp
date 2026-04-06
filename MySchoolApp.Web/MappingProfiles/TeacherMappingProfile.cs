@@ -6,6 +6,9 @@ namespace MySchoolApp.Web.MappingProfiles
 {
     public class TeacherMappingProfile : Profile
     {
-        //CreateMap<Teacher, IndexVM>();
+        public TeacherMappingProfile()
+        {
+            CreateMap<Teacher, IndexVM>();
+        }
     }
 }

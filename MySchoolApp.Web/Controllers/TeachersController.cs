@@ -1,21 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using MySchoolApp.Web.Data;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace MySchoolApp.Web.Controllers
 {
     public class TeachersController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IMapper _mapper;
 
-        public TeachersController(ApplicationDbContext context)
+        public TeachersController(ApplicationDbContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
         // GET: Teachers
@@ -23,13 +26,7 @@ namespace MySchoolApp.Web.Controllers
         {
             var data = await _context.Teachers.ToListAsync();
 
-            var viewData = data.Select(t => new Models.Teachers.IndexVM
-            {
-                Id = t.Id,
-                FirstName = t.FirstName,
-                LastName = t.LastName,
-                Email = t.Email
-            }).ToList();
+            var viewData = _mapper.Map<List<Models.Teachers.IndexVM>>(data);
 
             return View(viewData);
         }
