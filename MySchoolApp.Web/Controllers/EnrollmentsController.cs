@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -12,17 +9,22 @@ namespace MySchoolApp.Web.Controllers
     public class EnrollmentsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IMapper _mapper;
 
-        public EnrollmentsController(ApplicationDbContext context)
+        public EnrollmentsController(ApplicationDbContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
         // GET: Enrollments
         public async Task<IActionResult> Index()
         {
             var applicationDbContext = _context.Enrollments.Include(e => e.CourseSection).Include(e => e.Student);
-            return View(await applicationDbContext.ToListAsync());
+            var data = await applicationDbContext.ToListAsync();
+
+            var viewData = _mapper.Map<List<Models.Enrollments.EnrollmentIndexVM>>(data);
+            return View(viewData);
         }
 
         // GET: Enrollments/Details/5

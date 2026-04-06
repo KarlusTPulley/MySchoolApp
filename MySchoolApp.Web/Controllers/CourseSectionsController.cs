@@ -1,28 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using MySchoolApp.Web.Data;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace MySchoolApp.Web.Controllers
 {
     public class CourseSectionsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IMapper _mapper;
 
-        public CourseSectionsController(ApplicationDbContext context)
+        public CourseSectionsController(ApplicationDbContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
         // GET: CourseSections
         public async Task<IActionResult> Index()
         {
             var applicationDbContext = _context.CourseSections.Include(c => c.Course).Include(c => c.Teacher);
-            return View(await applicationDbContext.ToListAsync());
+            var data = await applicationDbContext.ToListAsync();
+            var viewData = _mapper.Map<List<Models.CourseSection.CourseSectionIndexVM>>(data);
+            return View(viewData);
         }
 
         // GET: CourseSections/Details/5

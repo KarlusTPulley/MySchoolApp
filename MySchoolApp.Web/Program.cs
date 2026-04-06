@@ -10,7 +10,7 @@ var loggerFactory = builder.Services.BuildServiceProvider()
                                    .GetRequiredService<ILoggerFactory>();
 var mapperConfig = new MapperConfiguration(cfg =>
 {
-    cfg.AddProfile<TeacherMappingProfile>();
+    cfg.AddProfile<SchoolMappingProfile>();
 }, loggerFactory);
 
 IMapper mapper = mapperConfig.CreateMapper();
