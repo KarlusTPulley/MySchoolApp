@@ -15,7 +15,9 @@ namespace MySchoolApp.Web.MappingProfiles
             CreateMap<Teacher, IndexVM>();
             CreateMap<Course, CoursesIndexVM>();
             CreateMap<CourseSection, CourseSectionIndexVM>();
+            CreateMap<CourseSection, CourseSectionDetailsVM>();
             CreateMap<Enrollment, EnrollmentIndexVM>();
+            CreateMap<Enrollment, EnrollmentDetailsVM>();
             CreateMap<Student, StudentIndexVM>();
         }
     }

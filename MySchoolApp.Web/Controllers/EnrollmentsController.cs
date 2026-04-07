@@ -44,7 +44,9 @@ namespace MySchoolApp.Web.Controllers
                 return NotFound();
             }
 
-            return View(enrollment);
+            var viewData = _mapper.Map< MySchoolApp.Web.Models.Enrollments.EnrollmentDetailsVM>(enrollment);
+
+            return View(viewData);
         }
 
         // GET: Enrollments/Create
