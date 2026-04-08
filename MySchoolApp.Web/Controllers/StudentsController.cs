@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MySchoolApp.Web.Data;
+using MySchoolApp.Web.Models.Students;
 
 namespace MySchoolApp.Web.Controllers
 {
@@ -54,15 +55,16 @@ namespace MySchoolApp.Web.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,FirstName,LastName,DateOfBirth,Email")] Student student)
+        public async Task<IActionResult> Create(StudentCreateVM studentCreateVM)
         {
             if (ModelState.IsValid)
             {
+                var student = _mapper.Map<Student>(studentCreateVM);
                 _context.Add(student);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(student);
+            return View(studentCreateVM);
         }
 
         // GET: Students/Edit/5

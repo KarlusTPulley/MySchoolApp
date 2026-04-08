@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using MySchoolApp.Web.Data;
+using MySchoolApp.Web.Models.CourseSection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -66,17 +67,18 @@ namespace MySchoolApp.Web.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,CourseId,TeacherId,SectionNumber,Semester")] CourseSection courseSection)
+        public async Task<IActionResult> Create(CourseSectionCreateVM courseSectionCreateVM)
         {
             if (ModelState.IsValid)
             {
+                var courseSection = _mapper.Map<CourseSection>(courseSectionCreateVM);
                 _context.Add(courseSection);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CourseId"] = new SelectList(_context.Courses, "Id", "Id", courseSection.CourseId);
-            ViewData["TeacherId"] = new SelectList(_context.Teachers, "Id", "Id", courseSection.TeacherId);
-            return View(courseSection);
+            ViewData["CourseId"] = new SelectList(_context.Courses, "Id", "Id", courseSectionCreateVM.CourseId);
+            ViewData["TeacherId"] = new SelectList(_context.Teachers, "Id", "Id", courseSectionCreateVM.TeacherId);
+            return View(courseSectionCreateVM);
         }
 
         // GET: CourseSections/Edit/5

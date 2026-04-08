@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using MySchoolApp.Web.Data;
+using MySchoolApp.Web.Models.Courses;
+using MySchoolApp.Web.Models.Enrollments;
 
 namespace MySchoolApp.Web.Controllers
 {
@@ -62,17 +64,18 @@ namespace MySchoolApp.Web.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,StudentId,CourseSectionId,Grade")] Enrollment enrollment)
+        public async Task<IActionResult> Create(EnrollmentCreateVM enrollmentCreateVM)
         {
             if (ModelState.IsValid)
             {
+                var enrollment = _mapper.Map<Enrollment>(enrollmentCreateVM);
                 _context.Add(enrollment);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CourseSectionId"] = new SelectList(_context.CourseSections, "Id", "Id", enrollment.CourseSectionId);
-            ViewData["StudentId"] = new SelectList(_context.Students.Select(s => new { s.Id, FullName = s.FirstName + " " + s.LastName }), "Id", "FullName", enrollment.StudentId);
-            return View(enrollment);
+            ViewData["CourseSectionId"] = new SelectList(_context.CourseSections, "Id", "Id", enrollmentCreateVM.CourseSectionId);
+            ViewData["StudentId"] = new SelectList(_context.Students.Select(s => new { s.Id, FullName = s.FirstName + " " + s.LastName }), "Id", "FullName", enrollmentCreateVM.StudentId);
+            return View(enrollmentCreateVM);
         }
 
         // GET: Enrollments/Edit/5
