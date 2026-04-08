@@ -14,17 +14,26 @@ namespace MySchoolApp.Web.MappingProfiles
         {
             CreateMap<Teacher, IndexVM>();
             CreateMap<TeacherCreateVM, Teacher>();
+            CreateMap<Teacher, TeacherDeleteVM>();
+
             CreateMap<Course, CoursesIndexVM>();
+            CreateMap<Course, CourseDeleteVM>();
             CreateMap<CourseCreateVM, Course>();
             CreateMap<CourseEditVM, Course>().ReverseMap();
+
             CreateMap<CourseSection, CourseSectionIndexVM>();
             CreateMap<CourseSection, CourseSectionDetailsVM>();
             CreateMap<CourseSectionCreateVM, CourseSection>();
+            CreateMap<CourseSection, CourseSectionDeleteVM>();
+
             CreateMap<Enrollment, EnrollmentIndexVM>();
             CreateMap<Enrollment, EnrollmentDetailsVM>();
             CreateMap<EnrollmentCreateVM, Enrollment>();
+            CreateMap<Enrollment, EnrollmentDeleteVM>();
+
             CreateMap<Student, StudentIndexVM>();
             CreateMap<StudentCreateVM, Student>();
+            CreateMap<Student, StudentDeleteVM>();
         }
     }
 }

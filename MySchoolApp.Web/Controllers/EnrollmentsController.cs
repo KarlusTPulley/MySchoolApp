@@ -150,7 +150,9 @@ namespace MySchoolApp.Web.Controllers
                 return NotFound();
             }
 
-            return View(enrollment);
+            var viewData = _mapper.Map<EnrollmentDeleteVM>(enrollment);
+
+            return View(viewData);
         }
 
         // POST: Enrollments/Delete/5

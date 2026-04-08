@@ -134,7 +134,9 @@ namespace MySchoolApp.Web.Controllers
                 return NotFound();
             }
 
-            return View(teacher);
+            var teacherDeleteVM = _mapper.Map<TeacherDeleteVM>(teacher);
+
+            return View(teacherDeleteVM);
         }
 
         // POST: Teachers/Delete/5

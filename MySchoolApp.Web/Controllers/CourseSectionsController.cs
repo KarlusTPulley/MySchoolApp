@@ -153,7 +153,9 @@ namespace MySchoolApp.Web.Controllers
                 return NotFound();
             }
 
-            return View(courseSection);
+            var viewData = _mapper.Map<CourseSectionDeleteVM>(courseSection);
+
+            return View(viewData);
         }
 
         // POST: CourseSections/Delete/5
