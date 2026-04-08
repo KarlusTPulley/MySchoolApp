@@ -80,7 +80,10 @@ namespace MySchoolApp.Web.Controllers
             {
                 return NotFound();
             }
-            return View(course);
+
+            var viewData = _mapper.Map<CourseEditVM>(course);
+
+            return View(viewData);
         }
 
         // POST: Courses/Edit/5
@@ -88,9 +91,9 @@ namespace MySchoolApp.Web.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,CourseCode,Title,Credits")] Course course)
+        public async Task<IActionResult> Edit(int id, CourseEditVM courseEditVM)
         {
-            if (id != course.Id)
+            if (id != courseEditVM.Id)
             {
                 return NotFound();
             }
@@ -99,12 +102,13 @@ namespace MySchoolApp.Web.Controllers
             {
                 try
                 {
+                    var course = _mapper.Map<Course>(courseEditVM);
                     _context.Update(course);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!CourseExists(course.Id))
+                    if (!CourseExists(courseEditVM.Id))
                     {
                         return NotFound();
                     }
@@ -115,7 +119,7 @@ namespace MySchoolApp.Web.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(course);
+            return View(courseEditVM);
         }
 
         // GET: Courses/Delete/5
