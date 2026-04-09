@@ -11,5 +11,7 @@
         public DateTime DateOfBirth { get; set; }
 
         public string Email { get; set; }
+
+        public bool CanDelete { get; set; }
     }
 }

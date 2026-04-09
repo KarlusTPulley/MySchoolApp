@@ -20,9 +20,20 @@ namespace MySchoolApp.Web.Controllers
         // GET: Students
         public async Task<IActionResult> Index()
         {
-            var data = await _context.Students.ToListAsync();
+            //var data = await _context.Students.ToListAsync();
+            var students = await _context.Students
+                .Select(s => new Student
+                {
+                    Id = s.Id,
+                    FirstName = s.FirstName,
+                    LastName = s.LastName,
+                    Email = s.Email,
+                    DateOfBirth = s.DateOfBirth,
+                    CanDelete = !s.Enrollments.Any()
+                })
+                .ToListAsync();
 
-            var viewData = _mapper.Map<List<Models.Students.StudentIndexVM>>(data);
+            var viewData = _mapper.Map<List<Models.Students.StudentIndexVM>>(students);
             return View(viewData);
         }
 
@@ -132,7 +143,7 @@ namespace MySchoolApp.Web.Controllers
             {
                 return NotFound();
             }
-            var enrollmentExist = CheckIfEnrollmentExist(student.Id);
+            var enrollmentExist = await CheckIfEnrollmentExist(student.Id);
             if (enrollmentExist)
             {
                 //todo give message you can't delete or grey out
@@ -144,9 +155,9 @@ namespace MySchoolApp.Web.Controllers
             return View(studentDeleteVM);
         }
 
-        private bool CheckIfEnrollmentExist(int id)
+        private async Task<bool> CheckIfEnrollmentExist(int id)
         {
-            return _context.Enrollments.Any(e => e.StudentId == id);
+            return await _context.Enrollments.AnyAsync(e => e.StudentId == id);
         }
 
         // POST: Students/Delete/5

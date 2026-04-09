@@ -20,6 +20,9 @@ namespace MySchoolApp.Web.Data
         [NotMapped]
         public string FullName => $"{FirstName} {LastName}";
 
+        [NotMapped]
+        public bool CanDelete { get; set; }
+
         public ICollection<Enrollment>? Enrollments { get; set; } = new List<Enrollment>();
     }
 }
