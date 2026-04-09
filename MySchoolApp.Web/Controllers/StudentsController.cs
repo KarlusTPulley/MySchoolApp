@@ -132,10 +132,21 @@ namespace MySchoolApp.Web.Controllers
             {
                 return NotFound();
             }
+            var enrollmentExist = CheckIfEnrollmentExist(student.Id);
+            if (enrollmentExist)
+            {
+                //todo give message you can't delete or grey out
+                return RedirectToAction(nameof(Index));
+            }
 
             var studentDeleteVM = _mapper.Map<StudentDeleteVM>(student);
 
             return View(studentDeleteVM);
+        }
+
+        private bool CheckIfEnrollmentExist(int id)
+        {
+            return _context.Enrollments.Any(e => e.StudentId == id);
         }
 
         // POST: Students/Delete/5
