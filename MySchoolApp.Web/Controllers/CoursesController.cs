@@ -3,26 +3,23 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MySchoolApp.Web.Data;
 using MySchoolApp.Web.Models.Courses;
+using MySchoolApp.Web.Services;
 
 namespace MySchoolApp.Web.Controllers
 {
     public class CoursesController : Controller
     {
-        private readonly ApplicationDbContext _context;
-        private readonly IMapper _mapper;
+        private readonly ICoursesService _coursesService;
 
-        public CoursesController(ApplicationDbContext context, IMapper mapper)
+        public CoursesController(ICoursesService coursesService)
         {
-            _context = context;
-            _mapper = mapper;
+            _coursesService = coursesService;
         }
 
         // GET: Courses
         public async Task<IActionResult> Index()
         {
-            var data = await _context.Courses.ToListAsync();
-
-            var viewData =  _mapper.Map<List<Models.Courses.CoursesIndexVM>>(data);
+            var viewData = await _coursesService.GetAllCoursesAsync();
             return View(viewData);
         }
 
@@ -34,8 +31,7 @@ namespace MySchoolApp.Web.Controllers
                 return NotFound();
             }
 
-            var course = await _context.Courses
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var course = await _coursesService.Get<CourseDetailsVM>(id.Value);
             if (course == null)
             {
                 return NotFound();
@@ -57,11 +53,14 @@ namespace MySchoolApp.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(CourseCreateVM courseCreateVM)
         {
+            if(await _coursesService.CourseNameExists(courseCreateVM.CourseCode))
+            {
+                ModelState.AddModelError(nameof(courseCreateVM.CourseCode), "Course already exists");
+            }
+
             if (ModelState.IsValid)
             {
-                var course = _mapper.Map<Course>(courseCreateVM);
-                _context.Add(course);
-                await _context.SaveChangesAsync();
+                await _coursesService.Create(courseCreateVM);
                 return RedirectToAction(nameof(Index));
             }
             return View(courseCreateVM);
@@ -75,13 +74,11 @@ namespace MySchoolApp.Web.Controllers
                 return NotFound();
             }
 
-            var course = await _context.Courses.FindAsync(id);
-            if (course == null)
+            var viewData = await _coursesService.Get<CourseEditVM>(id.Value);
+            if (viewData == null)
             {
                 return NotFound();
             }
-
-            var viewData = _mapper.Map<CourseEditVM>(course);
 
             return View(viewData);
         }
@@ -98,17 +95,21 @@ namespace MySchoolApp.Web.Controllers
                 return NotFound();
             }
 
+            if (await _coursesService.CourseNameExistsForEcit(courseEditVM))
+            {
+                    ModelState.AddModelError(nameof(courseEditVM.CourseCode), "Course already exists");
+            }
+
             if (ModelState.IsValid)
             {
                 try
                 {
-                    var course = _mapper.Map<Course>(courseEditVM);
-                    _context.Update(course);
-                    await _context.SaveChangesAsync();
+                    await _coursesService.Edit(courseEditVM);
+
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!CourseExists(courseEditVM.Id))
+                    if (!await _coursesService.CourseExists(courseEditVM.Id))
                     {
                         return NotFound();
                     }
@@ -130,14 +131,12 @@ namespace MySchoolApp.Web.Controllers
                 return NotFound();
             }
 
-            var course = await _context.Courses
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (course == null)
+            var viewData = await _coursesService.Get<CourseDeleteVM>(id.Value);
+
+            if (viewData == null)
             {
                 return NotFound();
             }
-
-            var viewData = _mapper.Map<CourseDeleteVM>(course);
 
             return View(viewData);
         }
@@ -147,19 +146,8 @@ namespace MySchoolApp.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var course = await _context.Courses.FindAsync(id);
-            if (course != null)
-            {
-                _context.Courses.Remove(course);
-            }
-
-            await _context.SaveChangesAsync();
+            await _coursesService.Remove(id);
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool CourseExists(int id)
-        {
-            return _context.Courses.Any(e => e.Id == id);
         }
     }
 }

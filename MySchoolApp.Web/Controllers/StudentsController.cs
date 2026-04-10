@@ -20,7 +20,6 @@ namespace MySchoolApp.Web.Controllers
         // GET: Students
         public async Task<IActionResult> Index()
         {
-            //var data = await _context.Students.ToListAsync();
             var students = await _context.Students
                 .Select(s => new Student
                 {

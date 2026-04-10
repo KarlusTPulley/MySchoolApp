@@ -1,34 +1,29 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using MySchoolApp.Web.Data;
 using MySchoolApp.Web.Models.CourseSection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+using MySchoolApp.Web.Services;
 
 namespace MySchoolApp.Web.Controllers
 {
     public class CourseSectionsController : Controller
     {
-        private readonly ApplicationDbContext _context;
-        private readonly IMapper _mapper;
+        //private readonly ApplicationDbContext _context;
+        //private readonly IMapper _mapper;
+        private readonly ICourseSectionsService _courseSectionsService;
 
-        public CourseSectionsController(ApplicationDbContext context, IMapper mapper)
+        public CourseSectionsController(ICourseSectionsService courseSectionsService)
         {
-            _context = context;
-            _mapper = mapper;
+            //_context = context;
+            //_mapper = mapper;
+            _courseSectionsService = courseSectionsService;
         }
 
         // GET: CourseSections
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.CourseSections.Include(c => c.Course).Include(c => c.Teacher);
-            var data = await applicationDbContext.ToListAsync();
-            var viewData = _mapper.Map<List<Models.CourseSection.CourseSectionIndexVM>>(data);
+            var viewData = await _courseSectionsService.GetAllCoursesAsync();
             return View(viewData);
         }
 
@@ -40,16 +35,11 @@ namespace MySchoolApp.Web.Controllers
                 return NotFound();
             }
 
-            var courseSection = await _context.CourseSections
-                .Include(c => c.Course)
-                .Include(c => c.Teacher)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (courseSection == null)
+            var viewData = await _courseSectionsService.Get<CourseSectionDetailsVM>(id.Value);
+            if (viewData == null)
             {
                 return NotFound();
             }
-
-            var viewData = _mapper.Map<Models.CourseSection.CourseSectionDetailsVM>(courseSection);
 
             return View(viewData);
         }
@@ -57,8 +47,7 @@ namespace MySchoolApp.Web.Controllers
         // GET: CourseSections/Create
         public IActionResult Create()
         {
-            ViewData["CourseId"] = new SelectList(_context.Courses.Select(c => new {c.Id, c.CourseName}), "Id", "CourseName");
-            ViewData["TeacherId"] = new SelectList(_context.Teachers.Select(t => new { t.Id, t.FullName} ), "Id", "FullName");
+            _courseSectionsService.UpdateLists(ViewData);
             return View();
         }
 
@@ -71,13 +60,10 @@ namespace MySchoolApp.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-                var courseSection = _mapper.Map<CourseSection>(courseSectionCreateVM);
-                _context.Add(courseSection);
-                await _context.SaveChangesAsync();
+                await _courseSectionsService.Create(courseSectionCreateVM);
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CourseId"] = new SelectList(_context.Courses, "Id", "Id", courseSectionCreateVM.CourseId);
-            ViewData["TeacherId"] = new SelectList(_context.Teachers, "Id", "Id", courseSectionCreateVM.TeacherId);
+            _courseSectionsService.UpdateLists(ViewData);
             return View(courseSectionCreateVM);
         }
 
@@ -89,14 +75,13 @@ namespace MySchoolApp.Web.Controllers
                 return NotFound();
             }
 
-            var courseSection = await _context.CourseSections.FindAsync(id);
-            if (courseSection == null)
+            var courseSectionEditVM = await _courseSectionsService.Get<CourseSectionEditVM>(id.Value);
+            if (courseSectionEditVM == null)
             {
                 return NotFound();
             }
-            ViewData["CourseId"] = new SelectList(_context.Courses, "Id", "Id", courseSection.CourseId);
-            ViewData["TeacherId"] = new SelectList(_context.Teachers, "Id", "Id", courseSection.TeacherId);
-            return View(courseSection);
+            _courseSectionsService.UpdateLists(ViewData);
+            return View(courseSectionEditVM);
         }
 
         // POST: CourseSections/Edit/5
@@ -104,9 +89,9 @@ namespace MySchoolApp.Web.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,CourseId,TeacherId,SectionNumber,Semester")] CourseSection courseSection)
+        public async Task<IActionResult> Edit(int id, CourseSectionEditVM courseSectionEditVM)
         {
-            if (id != courseSection.Id)
+            if (id != courseSectionEditVM.Id)
             {
                 return NotFound();
             }
@@ -115,12 +100,11 @@ namespace MySchoolApp.Web.Controllers
             {
                 try
                 {
-                    _context.Update(courseSection);
-                    await _context.SaveChangesAsync();
+                    await _courseSectionsService.Edit(courseSectionEditVM);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!CourseSectionExists(courseSection.Id))
+                    if (!_courseSectionsService.CourseSectionExists(courseSectionEditVM.Id))
                     {
                         return NotFound();
                     }
@@ -131,9 +115,8 @@ namespace MySchoolApp.Web.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CourseId"] = new SelectList(_context.Courses, "Id", "Id", courseSection.CourseId);
-            ViewData["TeacherId"] = new SelectList(_context.Teachers, "Id", "Id", courseSection.TeacherId);
-            return View(courseSection);
+            _courseSectionsService.UpdateLists(ViewData);
+            return View(courseSectionEditVM);
         }
 
         // GET: CourseSections/Delete/5
@@ -144,16 +127,11 @@ namespace MySchoolApp.Web.Controllers
                 return NotFound();
             }
 
-            var courseSection = await _context.CourseSections
-                .Include(c => c.Course)
-                .Include(c => c.Teacher)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (courseSection == null)
+            var viewData = await _courseSectionsService.Get<CourseSectionDeleteVM>(id.Value);
+            if (viewData == null)
             {
                 return NotFound();
             }
-
-            var viewData = _mapper.Map<CourseSectionDeleteVM>(courseSection);
 
             return View(viewData);
         }
@@ -163,19 +141,8 @@ namespace MySchoolApp.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var courseSection = await _context.CourseSections.FindAsync(id);
-            if (courseSection != null)
-            {
-                _context.CourseSections.Remove(courseSection);
-            }
-
-            await _context.SaveChangesAsync();
+            await _courseSectionsService.Remove(id);
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool CourseSectionExists(int id)
-        {
-            return _context.CourseSections.Any(e => e.Id == id);
         }
     }
 }
