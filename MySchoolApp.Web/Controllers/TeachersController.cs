@@ -42,7 +42,8 @@ namespace MySchoolApp.Web.Controllers
                 return NotFound();
             }
 
-            return View(teacher);
+            var teacherDetailsVM = _mapper.Map<TeacherDetailsVM>(teacher);
+            return View(teacherDetailsVM);
         }
 
         // GET: Teachers/Create
@@ -81,7 +82,9 @@ namespace MySchoolApp.Web.Controllers
             {
                 return NotFound();
             }
-            return View(teacher);
+
+            var teacherEditVM = _mapper.Map<TeacherEditVM>(teacher);
+            return View(teacherEditVM);
         }
 
         // POST: Teachers/Edit/5
@@ -89,9 +92,9 @@ namespace MySchoolApp.Web.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,FirstName,LastName,Email")] Teacher teacher)
+        public async Task<IActionResult> Edit(int id, TeacherEditVM teacherEditVM)
         {
-            if (id != teacher.Id)
+            if (id != teacherEditVM.Id)
             {
                 return NotFound();
             }
@@ -100,12 +103,13 @@ namespace MySchoolApp.Web.Controllers
             {
                 try
                 {
+                    var teacher = _mapper.Map<Teacher>(teacherEditVM);
                     _context.Update(teacher);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!TeacherExists(teacher.Id))
+                    if (!TeacherExists(teacherEditVM.Id))
                     {
                         return NotFound();
                     }
@@ -116,7 +120,7 @@ namespace MySchoolApp.Web.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(teacher);
+            return View(teacherEditVM);
         }
 
         // GET: Teachers/Delete/5

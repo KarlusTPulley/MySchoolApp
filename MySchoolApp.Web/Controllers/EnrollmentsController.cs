@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using MySchoolApp.Web.Data;
 using MySchoolApp.Web.Models.Courses;
+using MySchoolApp.Web.Models.CourseSection;
 using MySchoolApp.Web.Models.Enrollments;
 
 namespace MySchoolApp.Web.Controllers
@@ -91,9 +92,11 @@ namespace MySchoolApp.Web.Controllers
             {
                 return NotFound();
             }
+
             ViewData["CourseSectionId"] = new SelectList(_context.CourseSections, "Id", "Id", enrollment.CourseSectionId);
             ViewData["StudentId"] = new SelectList(_context.Students.Select(s => new { s.Id, FullName = s.FirstName + " " + s.LastName }), "Id", "FullName", enrollment.StudentId);
-            return View(enrollment);
+            var viewModel = _mapper.Map<EnrollmentEditVM>(enrollment);
+            return View(viewModel);
         }
 
         // POST: Enrollments/Edit/5
@@ -101,9 +104,9 @@ namespace MySchoolApp.Web.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,StudentId,CourseSectionId,Grade")] Enrollment enrollment)
+        public async Task<IActionResult> Edit(int id, EnrollmentEditVM enrollmentEditVM)
         {
-            if (id != enrollment.Id)
+            if (id != enrollmentEditVM.Id)
             {
                 return NotFound();
             }
@@ -112,12 +115,13 @@ namespace MySchoolApp.Web.Controllers
             {
                 try
                 {
+                    var enrollment = _mapper.Map<Enrollment>(enrollmentEditVM);
                     _context.Update(enrollment);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!EnrollmentExists(enrollment.Id))
+                    if (!EnrollmentExists(enrollmentEditVM.Id))
                     {
                         return NotFound();
                     }
@@ -128,9 +132,9 @@ namespace MySchoolApp.Web.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CourseSectionId"] = new SelectList(_context.CourseSections, "Id", "Id", enrollment.CourseSectionId);
-            ViewData["StudentId"] = new SelectList(_context.Students, "Id", "Id", enrollment.StudentId);
-            return View(enrollment);
+            ViewData["CourseSectionId"] = new SelectList(_context.CourseSections, "Id", "Id", enrollmentEditVM.CourseSectionId);
+            ViewData["StudentId"] = new SelectList(_context.Students, "Id", "Id", enrollmentEditVM.StudentId);
+            return View(enrollmentEditVM);
         }
 
         // GET: Enrollments/Delete/5
