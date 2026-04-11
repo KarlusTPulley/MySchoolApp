@@ -3,36 +3,27 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MySchoolApp.Web.Data;
 using MySchoolApp.Web.Models.Students;
+using MySchoolApp.Web.Services;
 
 namespace MySchoolApp.Web.Controllers
 {
     public class StudentsController : Controller
     {
-        private readonly ApplicationDbContext _context;
-        private readonly IMapper _mapper;
+        //private readonly ApplicationDbContext _context;
+        //private readonly IMapper _mapper;
+        private readonly IStudentsService _studentsService;
 
-        public StudentsController(ApplicationDbContext context, IMapper mapper)
+        public StudentsController(IStudentsService studentsService)
         {
-            _context = context;
-            _mapper = mapper;
+            _studentsService = studentsService;
+            //_context = context;
+            //_mapper = mapper;
         }
 
         // GET: Students
         public async Task<IActionResult> Index()
         {
-            var students = await _context.Students
-                .Select(s => new Student
-                {
-                    Id = s.Id,
-                    FirstName = s.FirstName,
-                    LastName = s.LastName,
-                    Email = s.Email,
-                    DateOfBirth = s.DateOfBirth,
-                    CanDelete = !s.Enrollments.Any()
-                })
-                .ToListAsync();
-
-            var viewData = _mapper.Map<List<Models.Students.StudentIndexVM>>(students);
+            var viewData = await _studentsService.GetAllStudentsAsync();
             return View(viewData);
         }
 
@@ -44,13 +35,11 @@ namespace MySchoolApp.Web.Controllers
                 return NotFound();
             }
 
-            var student = await _context.Students
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (student == null)
+            var viewModel = await _studentsService.Get<StudentDetailsVM>(id.Value);
+            if (viewModel == null)
             {
                 return NotFound();
             }
-            var viewModel = _mapper.Map<StudentDetailsVM>(student);
             return View(viewModel);
         }
 
@@ -69,9 +58,7 @@ namespace MySchoolApp.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-                var student = _mapper.Map<Student>(studentCreateVM);
-                _context.Add(student);
-                await _context.SaveChangesAsync();
+                await _studentsService.Create(studentCreateVM);
                 return RedirectToAction(nameof(Index));
             }
             return View(studentCreateVM);
@@ -85,13 +72,11 @@ namespace MySchoolApp.Web.Controllers
                 return NotFound();
             }
 
-            var student = await _context.Students.FindAsync(id);
-            if (student == null)
+            var studentEditVM = await _studentsService.Get<StudentEditVM>(id.Value);
+            if (studentEditVM == null)
             {
                 return NotFound();
             }
-
-            var studentEditVM = _mapper.Map<StudentEditVM>(student);
 
             return View(studentEditVM);
         }
@@ -112,13 +97,11 @@ namespace MySchoolApp.Web.Controllers
             {
                 try
                 {
-                    var student = _mapper.Map<Student>(studentEditVM);
-                    _context.Update(student);
-                    await _context.SaveChangesAsync();
+                    await _studentsService.Edit(studentEditVM);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!StudentExists(studentEditVM.Id))
+                    if (!_studentsService.StudentExists(studentEditVM.Id))
                     {
                         return NotFound();
                     }
@@ -142,27 +125,20 @@ namespace MySchoolApp.Web.Controllers
                 return NotFound();
             }
 
-            var student = await _context.Students
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (student == null)
+            var studentDeleteVM = await _studentsService.Get<StudentDeleteVM>(id.Value);
+            if (studentDeleteVM == null)
             {
                 return NotFound();
             }
-            var enrollmentExist = await CheckIfEnrollmentExist(student.Id);
+            var enrollmentExist = await _studentsService.CheckIfEnrollmentExist(studentDeleteVM.Id);
             if (enrollmentExist)
             {
                 //todo give message you can't delete or grey out
                 return RedirectToAction(nameof(Index));
             }
 
-            var studentDeleteVM = _mapper.Map<StudentDeleteVM>(student);
-
+           
             return View(studentDeleteVM);
-        }
-
-        private async Task<bool> CheckIfEnrollmentExist(int id)
-        {
-            return await _context.Enrollments.AnyAsync(e => e.StudentId == id);
         }
 
         // POST: Students/Delete/5
@@ -170,19 +146,9 @@ namespace MySchoolApp.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var student = await _context.Students.FindAsync(id);
-            if (student != null)
-            {
-                _context.Students.Remove(student);
-            }
-
-            await _context.SaveChangesAsync();
+            await _studentsService.Remove(id);
             return RedirectToAction(nameof(Index));
         }
 
-        private bool StudentExists(int id)
-        {
-            return _context.Students.Any(e => e.Id == id);
-        }
     }
 }
