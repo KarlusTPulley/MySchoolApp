@@ -3,27 +3,23 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MySchoolApp.Web.Data;
 using MySchoolApp.Web.Models.Teachers;
+using MySchoolApp.Web.Services;
 
 namespace MySchoolApp.Web.Controllers
 {
     public class TeachersController : Controller
     {
-        private readonly ApplicationDbContext _context;
-        private readonly IMapper _mapper;
+        private readonly ITeachersService _teachersService; 
 
-        public TeachersController(ApplicationDbContext context, IMapper mapper)
+        public TeachersController(ITeachersService teachersService)
         {
-            _context = context;
-            _mapper = mapper;
+            _teachersService = teachersService;
         }
 
         // GET: Teachers
         public async Task<IActionResult> Index()
         {
-            var data = await _context.Teachers.ToListAsync();
-
-            var viewData = _mapper.Map<List<Models.Teachers.IndexVM>>(data);
-
+            var viewData = await _teachersService.GetAllTeachersAsync();
             return View(viewData);
         }
 
@@ -35,14 +31,12 @@ namespace MySchoolApp.Web.Controllers
                 return NotFound();
             }
 
-            var teacher = await _context.Teachers
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (teacher == null)
+            var teacherDetailsVM = await _teachersService.Get<TeacherDetailsVM>(id.Value);
+            if (teacherDetailsVM == null)
             {
                 return NotFound();
             }
 
-            var teacherDetailsVM = _mapper.Map<TeacherDetailsVM>(teacher);
             return View(teacherDetailsVM);
         }
 
@@ -61,9 +55,7 @@ namespace MySchoolApp.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-                var teacher = _mapper.Map<Teacher>(teacherCreateVM);
-                _context.Add(teacher);
-                await _context.SaveChangesAsync();
+                await _teachersService.Create(teacherCreateVM);
                 return RedirectToAction(nameof(Index));
             }
             return View(teacherCreateVM);
@@ -77,13 +69,12 @@ namespace MySchoolApp.Web.Controllers
                 return NotFound();
             }
 
-            var teacher = await _context.Teachers.FindAsync(id);
-            if (teacher == null)
+            var teacherEditVM = await _teachersService.Get<TeacherEditVM>(id.Value);
+            if (teacherEditVM == null)
             {
                 return NotFound();
             }
 
-            var teacherEditVM = _mapper.Map<TeacherEditVM>(teacher);
             return View(teacherEditVM);
         }
 
@@ -103,13 +94,11 @@ namespace MySchoolApp.Web.Controllers
             {
                 try
                 {
-                    var teacher = _mapper.Map<Teacher>(teacherEditVM);
-                    _context.Update(teacher);
-                    await _context.SaveChangesAsync();
+                    await _teachersService.Edit(teacherEditVM);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!TeacherExists(teacherEditVM.Id))
+                    if (!_teachersService.TeacherExists(teacherEditVM.Id))
                     {
                         return NotFound();
                     }
@@ -131,14 +120,11 @@ namespace MySchoolApp.Web.Controllers
                 return NotFound();
             }
 
-            var teacher = await _context.Teachers
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (teacher == null)
+            var teacherDeleteVM = await _teachersService.Get<TeacherDeleteVM>(id.Value);
+            if (teacherDeleteVM == null)
             {
                 return NotFound();
             }
-
-            var teacherDeleteVM = _mapper.Map<TeacherDeleteVM>(teacher);
 
             return View(teacherDeleteVM);
         }
@@ -148,19 +134,8 @@ namespace MySchoolApp.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var teacher = await _context.Teachers.FindAsync(id);
-            if (teacher != null)
-            {
-                _context.Teachers.Remove(teacher);
-            }
-
-            await _context.SaveChangesAsync();
+            await _teachersService.Remove(id);
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool TeacherExists(int id)
-        {
-            return _context.Teachers.Any(e => e.Id == id);
         }
     }
 }

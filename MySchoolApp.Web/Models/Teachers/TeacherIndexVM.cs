@@ -1,6 +1,6 @@
 ﻿namespace MySchoolApp.Web.Models.Teachers
 {
-    public class IndexVM
+    public class TeacherIndexVM
     {
         public int Id { get; set; }
         public string FirstName { get; set; }

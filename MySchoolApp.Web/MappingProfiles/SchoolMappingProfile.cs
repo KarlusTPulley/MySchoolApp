@@ -12,7 +12,7 @@ namespace MySchoolApp.Web.MappingProfiles
     {
         public SchoolMappingProfile()
         {
-            CreateMap<Teacher, IndexVM>();
+            CreateMap<Teacher, TeacherIndexVM>();
             CreateMap<TeacherCreateVM, Teacher>();
             CreateMap<Teacher, TeacherDeleteVM>();
             CreateMap<Teacher, TeacherDetailsVM>();
