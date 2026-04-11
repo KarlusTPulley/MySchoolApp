@@ -6,27 +6,23 @@ using MySchoolApp.Web.Data;
 using MySchoolApp.Web.Models.Courses;
 using MySchoolApp.Web.Models.CourseSection;
 using MySchoolApp.Web.Models.Enrollments;
+using MySchoolApp.Web.Services;
 
 namespace MySchoolApp.Web.Controllers
 {
     public class EnrollmentsController : Controller
     {
-        private readonly ApplicationDbContext _context;
-        private readonly IMapper _mapper;
+        IEnrollmentsService _enrollmentsService;
 
-        public EnrollmentsController(ApplicationDbContext context, IMapper mapper)
+        public EnrollmentsController(IEnrollmentsService enrollmentsService)
         {
-            _context = context;
-            _mapper = mapper;
+            _enrollmentsService = enrollmentsService;
         }
 
         // GET: Enrollments
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Enrollments.Include(e => e.CourseSection).Include(e => e.Student);
-            var data = await applicationDbContext.ToListAsync();
-
-            var viewData = _mapper.Map<List<Models.Enrollments.EnrollmentIndexVM>>(data);
+            var viewData = await _enrollmentsService.GetAllEnrollmentsAsync();
             return View(viewData);
         }
 
@@ -38,16 +34,11 @@ namespace MySchoolApp.Web.Controllers
                 return NotFound();
             }
 
-            var enrollment = await _context.Enrollments
-                .Include(e => e.CourseSection)
-                .Include(e => e.Student)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (enrollment == null)
+            var viewData = await _enrollmentsService.Get<EnrollmentDetailsVM>(id.Value);
+            if (viewData == null)
             {
                 return NotFound();
             }
-
-            var viewData = _mapper.Map< MySchoolApp.Web.Models.Enrollments.EnrollmentDetailsVM>(enrollment);
 
             return View(viewData);
         }
@@ -55,8 +46,7 @@ namespace MySchoolApp.Web.Controllers
         // GET: Enrollments/Create
         public IActionResult Create()
         {
-            ViewData["CourseSectionId"] = new SelectList(_context.CourseSections.Select(c => new { c.Id, SectonName = c.SectionNumber + " " + c.Semester }), "Id", "SectonName");
-            ViewData["StudentId"] = new SelectList(_context.Students.Select(s => new { s.Id, FullName = s.FirstName + " " + s.LastName }), "Id", "FullName");
+            _enrollmentsService.UpdateLists(ViewData, 0, 0);
             return View();
         }
 
@@ -69,13 +59,10 @@ namespace MySchoolApp.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-                var enrollment = _mapper.Map<Enrollment>(enrollmentCreateVM);
-                _context.Add(enrollment);
-                await _context.SaveChangesAsync();
+                await _enrollmentsService.Create(enrollmentCreateVM);
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CourseSectionId"] = new SelectList(_context.CourseSections, "Id", "Id", enrollmentCreateVM.CourseSectionId);
-            ViewData["StudentId"] = new SelectList(_context.Students.Select(s => new { s.Id, FullName = s.FirstName + " " + s.LastName }), "Id", "FullName", enrollmentCreateVM.StudentId);
+            _enrollmentsService.UpdateLists(ViewData, enrollmentCreateVM.CourseSectionId, enrollmentCreateVM.StudentId);
             return View(enrollmentCreateVM);
         }
 
@@ -87,15 +74,13 @@ namespace MySchoolApp.Web.Controllers
                 return NotFound();
             }
 
-            var enrollment = await _context.Enrollments.FindAsync(id);
-            if (enrollment == null)
+            var viewModel = await _enrollmentsService.Get<EnrollmentEditVM>(id.Value);//_context.Enrollments.FindAsync(id);
+            if (viewModel == null)
             {
                 return NotFound();
             }
 
-            ViewData["CourseSectionId"] = new SelectList(_context.CourseSections, "Id", "Id", enrollment.CourseSectionId);
-            ViewData["StudentId"] = new SelectList(_context.Students.Select(s => new { s.Id, FullName = s.FirstName + " " + s.LastName }), "Id", "FullName", enrollment.StudentId);
-            var viewModel = _mapper.Map<EnrollmentEditVM>(enrollment);
+            _enrollmentsService.UpdateLists(ViewData, viewModel.CourseSectionId, viewModel.StudentId);
             return View(viewModel);
         }
 
@@ -115,13 +100,11 @@ namespace MySchoolApp.Web.Controllers
             {
                 try
                 {
-                    var enrollment = _mapper.Map<Enrollment>(enrollmentEditVM);
-                    _context.Update(enrollment);
-                    await _context.SaveChangesAsync();
+                    _enrollmentsService.Edit(enrollmentEditVM);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!EnrollmentExists(enrollmentEditVM.Id))
+                    if (!_enrollmentsService.EnrollmentExists(enrollmentEditVM.Id))
                     {
                         return NotFound();
                     }
@@ -132,8 +115,7 @@ namespace MySchoolApp.Web.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CourseSectionId"] = new SelectList(_context.CourseSections, "Id", "Id", enrollmentEditVM.CourseSectionId);
-            ViewData["StudentId"] = new SelectList(_context.Students, "Id", "Id", enrollmentEditVM.StudentId);
+            _enrollmentsService.UpdateLists(ViewData, enrollmentEditVM.CourseSectionId, enrollmentEditVM.StudentId);
             return View(enrollmentEditVM);
         }
 
@@ -145,16 +127,11 @@ namespace MySchoolApp.Web.Controllers
                 return NotFound();
             }
 
-            var enrollment = await _context.Enrollments
-                .Include(e => e.CourseSection)
-                .Include(e => e.Student)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (enrollment == null)
+            var viewData = await _enrollmentsService.Get<EnrollmentDeleteVM>(id.Value);
+            if (viewData == null)
             {
                 return NotFound();
             }
-
-            var viewData = _mapper.Map<EnrollmentDeleteVM>(enrollment);
 
             return View(viewData);
         }
@@ -164,19 +141,9 @@ namespace MySchoolApp.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var enrollment = await _context.Enrollments.FindAsync(id);
-            if (enrollment != null)
-            {
-                _context.Enrollments.Remove(enrollment);
-            }
-
-            await _context.SaveChangesAsync();
+            await _enrollmentsService.Remove(id);
             return RedirectToAction(nameof(Index));
         }
 
-        private bool EnrollmentExists(int id)
-        {
-            return _context.Enrollments.Any(e => e.Id == id);
-        }
     }
 }

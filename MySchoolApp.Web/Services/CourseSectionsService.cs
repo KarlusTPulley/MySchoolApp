@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using MySchoolApp.Web.Data;
 using MySchoolApp.Web.Models.Courses;
 using MySchoolApp.Web.Models.CourseSection;
+using MySchoolApp.Web.Models.Enrollments;
 
 //Karlus: you can convert this namespace to scope namespace by adding the ';'
 //if we remove the semicolon the curly breaces will be re-added.
@@ -74,6 +75,11 @@ public class CourseSectionsService : ICourseSectionsService
         viewData["TeacherId"] = new SelectList(_context.Teachers.Select(t => new { t.Id, t.FullName }), "Id", "FullName");
     }
 
+    //public void UpdateLists(ViewDataDictionary viewData, int courseSectionId, int studentId)
+    //{
+    //    viewData["CourseSectionId"] = new SelectList(_context.CourseSections, "Id", "Id", courseSectionId);
+    //    viewData["StudentId"] = new SelectList(_context.Students.Select(s => new { s.Id, FullName = s.FirstName + " " + s.LastName }), "Id", "FullName", studentId);
+    //}
     public bool CourseSectionExists(int id)
     {
         return _context.CourseSections.Any(e => e.Id == id);

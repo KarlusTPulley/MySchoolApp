@@ -25,6 +25,7 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddScoped<ICoursesService, CoursesService>();
 builder.Services.AddScoped<ICourseSectionsService, CourseSectionsService>();
+builder.Services.AddScoped<IEnrollmentsService, EnrollmentsService>();
 
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>();
