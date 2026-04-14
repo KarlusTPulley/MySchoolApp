@@ -245,7 +245,7 @@ namespace MySchoolApp.Web.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Courses");
+                    b.ToTable("Courses", (string)null);
                 });
 
             modelBuilder.Entity("MySchoolApp.Web.Data.CourseSection", b =>
@@ -276,7 +276,7 @@ namespace MySchoolApp.Web.Data.Migrations
 
                     b.HasIndex("TeacherId");
 
-                    b.ToTable("CourseSections");
+                    b.ToTable("CourseSections", (string)null);
                 });
 
             modelBuilder.Entity("MySchoolApp.Web.Data.Enrollment", b =>
@@ -303,7 +303,7 @@ namespace MySchoolApp.Web.Data.Migrations
 
                     b.HasIndex("StudentId");
 
-                    b.ToTable("Enrollments");
+                    b.ToTable("Enrollments", (string)null);
                 });
 
             modelBuilder.Entity("MySchoolApp.Web.Data.Student", b =>
@@ -331,7 +331,7 @@ namespace MySchoolApp.Web.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Students");
+                    b.ToTable("Students", (string)null);
                 });
 
             modelBuilder.Entity("MySchoolApp.Web.Data.Teacher", b =>
@@ -356,7 +356,7 @@ namespace MySchoolApp.Web.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Teachers");
+                    b.ToTable("Teachers", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
