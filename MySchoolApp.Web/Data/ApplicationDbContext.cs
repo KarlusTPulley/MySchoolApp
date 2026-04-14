@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MySchoolApp.Web.Data
 {
-    public class ApplicationDbContext() : IdentityDbContext<ApplicationUser>
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -30,8 +30,8 @@ namespace MySchoolApp.Web.Data
             //    });
 
             
-            //builder.Entity<IdentityUser>().HasData(
-            //    new IdentityUser
+            //builder.Entity<ApplicationUser>().HasData(
+            //    new ApplicationUser
             //    {
             //        Id = "80c325cd-fa1f-4e6d-89bb-600a8dbb557a",
             //        UserName = "admin",

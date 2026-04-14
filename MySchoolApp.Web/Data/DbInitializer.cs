@@ -7,7 +7,7 @@ public static class DbInitializer
     public static async Task SeedAsync(IServiceProvider services)
     {
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-        var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
+        var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
 
         // --- ROLES ---
         string[] roles = { "Admin", "User" };
@@ -26,7 +26,7 @@ public static class DbInitializer
 
         if (adminUser == null)
         {
-            var user = new IdentityUser
+            var user = new ApplicationUser
             {
                 UserName = adminEmail,
                 Email = adminEmail,
