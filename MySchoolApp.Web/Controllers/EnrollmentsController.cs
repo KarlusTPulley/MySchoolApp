@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +11,7 @@ using MySchoolApp.Web.Services;
 
 namespace MySchoolApp.Web.Controllers
 {
+    [Authorize(Roles = Roles.Admin)]
     public class EnrollmentsController : Controller
     {
         IEnrollmentsService _enrollmentsService;
